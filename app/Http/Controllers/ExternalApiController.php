@@ -19,9 +19,11 @@ class ExternalApiController extends Controller
     	$params=array(
     		'page'=>'1',
     		'created_at_from'=>'2024-06-19 00:00:00 UTC',
-    		'created_at_to'=>'2024-06-19 06:00:00 +0000',
+    		'created_at_to'=>'2024-06-19 23:59:59 +0000',
     		'buyer_id'=>'10455172',
+            'per_page'=>'50',
     	);
+        $params['page']='1';
     	$response = Http::withHeaders([
 					    'Authorization' => 'Basic dGRwdWI3Y2JiNzNiYjc2MjlhM2VmOWY1NTUzNWQ1MjVhMTJkMzp0ZHBydjkxZTg2Zjc2MmJlZTg4NmNkNWRlZTlhMzg1ZGNmNWM3YjE5MGFmMjM=',
 					    //'Accept' => 'application/json',
@@ -255,7 +257,6 @@ class ExternalApiController extends Controller
         foreach ($array as $value) {
             //dd($value);
             if ($value !== $first) {
-                dd('rok');
                 return false;
             }
         }
