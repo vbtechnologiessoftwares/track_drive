@@ -19,7 +19,7 @@ class ExternalApiController extends Controller
     	$params=array(
     		'page'=>'1',
     		'created_at_from'=>'2024-06-19 00:00:00 UTC',
-    		'created_at_to'=>'2024-06-19 02:00:00 +0000',
+    		'created_at_to'=>'2024-06-19 06:00:00 +0000',
     		'buyer_id'=>'10455172',
     	);
     	$response = Http::withHeaders([
@@ -27,22 +27,25 @@ class ExternalApiController extends Controller
 					    //'Accept' => 'application/json',
 					])->get($url,$params);
     	$a=$response->json();
-
+        //dd($a);
     	$data['table_data']=$table_data=isset($a['calls'])?$a['calls']:array();
 
-        $filters='Filters used';
+        $filters='Filters used : ';
         foreach ($params as $key => $value) {
             //dd($value);
             $filters.= $key.' = '.$value .',';
         }
 
         //dd($filters);
+        $excel_data_filters=array();
+        $excel_data_stats=array();
         $excel_data=array();
 
 
-        $excel_data[]=array(
+        $excel_data_filters[]=array(
             $filters,
         );
+        $excel_data_filters[]=array();//insert empty row after filters
         $excel_data[]=array(
             '<b>#</b>',
             '<b>buyer_id</b>',
@@ -58,14 +61,17 @@ class ExternalApiController extends Controller
             '<b>agent_duration</b>',
             '<b>revenue</b>',
             '<b>traffic_source_converted</b>',
-            '<b>traffic_source_payout</b>',
+            //'<b>traffic_source_payout</b>',
             '<b>payout</b>',
-            '<b>trackdrive_cost</b>',
+            //'<b>trackdrive_cost</b>',
             '<b>provider_cost</b>',
             '<b>ended_at</b>',
         );
 
         $i=1;
+        
+
+        //for sum starts
         $total_duration_sum=0;
         $hold_duration_sum=0;
         $ivr_duration_sum=0;
@@ -78,10 +84,32 @@ class ExternalApiController extends Controller
         $payout_sum=0;
         $trackdrive_cost_sum=0;
         $provider_cost_sum=0;
+        //for sum ends
+
+        //stats variables starts
+        $total_calls=0;//total number of calls
+        $average_number_of_calls=0;// by default 0,  total number of calls/total_duration_sum
+
+        $total_converted_calls=0; // converted calls
+        $conversion_rate=0; // converted calls / total_calls
+
+        $average_payout_price=0;//payout_sum/total_converted_calls
+
+        $city_counts_arr = array();//initialized empty array
+        //stats variables ends
 
 
 
         foreach ($table_data as $key => $value) {
+            $total_calls=$total_calls+1;
+            if($value['buyer_converted']=='Converted'){
+                $total_converted_calls=$total_converted_calls+1;
+            }
+            $city = $value['caller_city'];
+            if (!isset($city_counts_arr[$city])) {
+                $city_counts_arr[$city] = 0;
+            }
+            $city_counts_arr[$city]++;
             $excel_data[]=array(
                 $i,
                 $value['buyer_id'],
@@ -97,9 +125,9 @@ class ExternalApiController extends Controller
                 $value['agent_duration'],
                 $value['revenue'],
                 $value['traffic_source_converted'],
-                $value['traffic_source_payout'],
+                //$value['traffic_source_payout'],
                 $value['payout'],
-                $value['trackdrive_cost'],
+                //$value['trackdrive_cost'],
                 $value['provider_cost'],
                 $value['ended_at'],
             );
@@ -139,6 +167,38 @@ class ExternalApiController extends Controller
            $i++; 
         }
 
+        if($total_duration_sum!=0){            
+            $average_number_of_calls=($total_calls/($total_duration_sum/60));
+        }
+        if($total_calls!=0){            
+            $conversion_rate=($total_converted_calls/$total_calls);
+        }
+        if($total_converted_calls!=0){            
+            $average_payout_price=($payout_sum/$total_converted_calls);
+        }
+        //print_r(max($city_counts_arr));
+        //dd($city_counts_arr);
+        //$most_common_city = array_search(max($city_counts_arr), $city_counts_arr);
+
+        $max_count = 0;
+        $most_common_city = '';
+        $most_common_cities='';
+        //dd($this->allElementsSame($city_counts_arr));
+        if(!$this->allElementsSame($city_counts_arr)){
+            foreach ($city_counts_arr as $city => $count) {
+                if ($count > $max_count) {
+                    $max_count = $count;
+                    $most_common_city = $city;
+                }
+            }
+            $most_common_cities='';
+            foreach ($city_counts_arr as $city => $count) {
+                if ($count == $max_count) {
+                    $most_common_cities.= $city.',';
+                }
+            }
+        }//if all elements value not same
+
         $excel_data[]=array(
                 '<b>Total<b>',
                 '',
@@ -154,26 +214,53 @@ class ExternalApiController extends Controller
                 '<b>'.$agent_duration_sum.'</b>',
                 '<b>'.$revenue_sum.'</b>',
                 '',
-                '<b>'.$traffic_source_payout_sum.'</b>',
+                //'<b>'.$traffic_source_payout_sum.'</b>',
                 '<b>'.$payout_sum.'</b>',
-                '<b>'.$trackdrive_cost_sum.'</b>',
+                //'<b>'.$trackdrive_cost_sum.'</b>',
                 '<b>'.$provider_cost_sum.'</b>',
                 '',
             );
 
-    	//return Excel::download(new InvoicesExport, 'invoices.xlsx');
+        $excel_data_stats[]=array(
+            '<b>average_number_of_calls</b>',
+            '<b>conversion_rate</b>',
+            '<b>average_payout_price</b>',
+            '<b>most_common_city</b>',
+        );
+        $excel_data_stats[]=array(
+            $average_number_of_calls,
+            $conversion_rate,
+            $average_payout_price,
+            $most_common_cities,
+        );
+        $excel_data_stats[]=array();//insert empty row after stats
 
-        /*$books = [
-            ['ISBN', 'title', 'author', 'publisher', 'ctry' ],
-            [618260307, 'The Hobbit', 'J. R. R. Tolkien', 'Houghton Mifflin', 'USA'],
-            [908606664, 'Slinky Malinki', 'Lynley Dodd', 'Mallinson Rendel', 'NZ']
-        ];*/
-        $xlsx = SimpleXLSXGen::fromArray( $excel_data );
+        $final_excel_data=array_merge($excel_data_filters,$excel_data_stats,$excel_data);
+
+        $xlsx = SimpleXLSXGen::fromArray( $final_excel_data );
         $xlsx->mergeCells('A1:S1');
         $xlsx->downloadAs('books.xlsx');
 
     	//return view('external_api')->with($data);
     	//dd($a);
+    }
+
+    private function allElementsSame($array){
+         // Get the first element of the array
+        $first = reset($array);
+
+        //dd($first);
+
+        // Check if all elements are the same as the first element
+        foreach ($array as $value) {
+            //dd($value);
+            if ($value !== $first) {
+                dd('rok');
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
