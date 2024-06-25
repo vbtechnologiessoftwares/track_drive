@@ -291,8 +291,8 @@ class ExternalApiController extends Controller
             'page'=>'1',
             'created_at_from'=>'2024-06-19 00:00:00 UTC',
             'created_at_to'=>'2024-06-19 02:59:59 +0000',
-            //'buyer_id'=>'10455172',
-            'traffic_source_id'=>'10160398',
+            'buyer_id'=>'10455172',
+            //'traffic_source_id'=>'10160398',
             'per_page'=>'25',
         );
         $differenceHours=$this->differenceHours($params);
@@ -304,7 +304,7 @@ class ExternalApiController extends Controller
                     ])->get($url,$params);
         $a=$response->json();
         //dd($a);
-        /*$total_pages = $a['metadata']['total_pages'];
+        $total_pages = $a['metadata']['total_pages'];
         $table_data=array();
         for ($i=1; $i <=$total_pages ; $i++) { 
             $params['page']=$i;
@@ -316,11 +316,11 @@ class ExternalApiController extends Controller
             $table_data1=isset($b['calls'])?$b['calls']:array();
             //print_r(count($table_data1));
             $table_data=array_merge($table_data,$table_data1);
-        }*/
+        }
         //die();
         //return false;
 
-        $table_data=isset($a['calls'])?$a['calls']:array();
+        //$table_data=isset($a['calls'])?$a['calls']:array();
         //dd($table_data);
         //$table_data=isset($a['calls'])?$a['calls']:array();
 
@@ -355,6 +355,8 @@ class ExternalApiController extends Controller
             '<b>agent_duration</b>',
             '<b>revenue</b>',
             '<b>traffic_source_converted</b>',
+            '<b>traffic_source_id</b>',
+            '<b>traffic_source</b>',
             //'<b>traffic_source_payout</b>',
             '<b>payout</b>',
             //'<b>trackdrive_cost</b>',
@@ -390,6 +392,7 @@ class ExternalApiController extends Controller
         $average_payout_price=0;//payout_sum/total_converted_calls
 
         $city_counts_arr = array();//initialized empty array
+        $traffic_source_counts_arr = array();//initialized empty array
 
         $average_revenue=0;
         //stats variables ends
@@ -406,6 +409,15 @@ class ExternalApiController extends Controller
                 $city_counts_arr[$city] = 0;
             }
             $city_counts_arr[$city]++;
+
+
+            $traffic_source = $value['traffic_source'];
+            if (!isset($traffic_source_counts_arr[$traffic_source])) {
+                $traffic_source_counts_arr[$traffic_source] = 0;
+            }
+            $traffic_source_counts_arr[$traffic_source]++;
+
+
             $excel_data[]=array(
                 $i,
                 $value['buyer_id'],
@@ -420,7 +432,9 @@ class ExternalApiController extends Controller
                 $value['answered_duration'],
                 $value['agent_duration'],
                 $value['revenue'],
-                $value['traffic_source_converted'].','.$value['traffic_source_id'].','.$value['traffic_source'],
+                $value['traffic_source_converted'],
+                $value['traffic_source_id'],
+                $value['traffic_source'],
                 //$value['traffic_source_payout'],
                 $value['payout'],
                 //$value['trackdrive_cost'],
@@ -503,6 +517,28 @@ class ExternalApiController extends Controller
             }
         }//if all elements value not same
 
+        $max_traffic_source_count = 0;
+        $most_common_traffic_sources='';
+        //dd($this->allElementsSame($city_counts_arr));
+        if(!$this->allElementsSame($traffic_source_counts_arr)){
+            foreach ($traffic_source_counts_arr as $key_traffic_source => $val_traffic_source) {
+                if ($val_traffic_source > $max_traffic_source_count) {
+                    $max_traffic_source_count = $val_traffic_source;
+                    //$most_common_city = $city;
+                }
+            }
+            $most_common_traffic_sources='';
+            foreach ($traffic_source_counts_arr as $key_traffic_source => $val_traffic_source) {
+                if ($val_traffic_source == $max_traffic_source_count) {
+                    $most_common_traffic_sources.= $key_traffic_source.',';
+                }
+            }
+        }//if all elements value not same
+
+        
+
+
+
         $excel_data[]=array(
                 '<b>Total<b>',
                 '',
@@ -518,6 +554,8 @@ class ExternalApiController extends Controller
                 '<b>'.$agent_duration_sum.'</b>',
                 '<b>'.$revenue_sum.'</b>',
                 '',
+                '',
+                '',
                 //'<b>'.$traffic_source_payout_sum.'</b>',
                 '<b>'.$payout_sum.'</b>',
                 //'<b>'.$trackdrive_cost_sum.'</b>',
@@ -531,6 +569,7 @@ class ExternalApiController extends Controller
             '<b>average_payout_price</b>',
             '<b>average_revenue</b>',
             '<b>most_common_city</b>',
+            '<b>Unique Traffic</b>',
         );
         $excel_data_stats[]=array(
             $average_number_of_calls,
@@ -538,6 +577,7 @@ class ExternalApiController extends Controller
             $average_payout_price,
             $average_revenue,
             $most_common_cities,
+            $most_common_traffic_sources,
         );
         $excel_data_stats[]=array();//insert empty row after stats
 
