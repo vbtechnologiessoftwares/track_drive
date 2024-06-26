@@ -293,10 +293,10 @@ class ExternalApiController extends Controller
             //'created_at_to'=>'2024-06-19 01:59:59 +0000',
 
             'created_at_from'=>'2024-06-19 00:00:00 UTC',
-            'created_at_to'=>'2024-06-19 1:59:59 +0000',
+            'created_at_to'=>'2024-06-19 4:59:59 +0000',
             //'buyer_id'=>'10455172',
             'traffic_source_id'=>'10160398',
-            'per_page'=>'25',
+            'per_page'=>'50',
         );
         $differenceHours=$this->differenceHours($params);
         //dd($differenceHours);
