@@ -289,10 +289,13 @@ class ExternalApiController extends Controller
         $url='https://live-calls-network.trackdrive.com/api/v1/calls';
         $params=array(
             'page'=>'1',
+            //'created_at_from'=>'2024-06-19 00:00:00 UTC',
+            //'created_at_to'=>'2024-06-19 01:59:59 +0000',
+
             'created_at_from'=>'2024-06-19 00:00:00 UTC',
-            'created_at_to'=>'2024-06-19 02:59:59 +0000',
-            'buyer_id'=>'10455172',
-            //'traffic_source_id'=>'10160398',
+            'created_at_to'=>'2024-06-19 1:59:59 +0000',
+            //'buyer_id'=>'10455172',
+            'traffic_source_id'=>'10160398',
             'per_page'=>'25',
         );
         $differenceHours=$this->differenceHours($params);
@@ -306,7 +309,7 @@ class ExternalApiController extends Controller
         //dd($a);
         $total_pages = $a['metadata']['total_pages'];
         $table_data=array();
-        for ($i=1; $i <=$total_pages ; $i++) { 
+        /*for ($i=1; $i <=$total_pages ; $i++) { 
             $params['page']=$i;
             $response1 = Http::withHeaders([
                         'Authorization' => 'Basic dGRwdWI3Y2JiNzNiYjc2MjlhM2VmOWY1NTUzNWQ1MjVhMTJkMzp0ZHBydjkxZTg2Zjc2MmJlZTg4NmNkNWRlZTlhMzg1ZGNmNWM3YjE5MGFmMjM=',
@@ -316,7 +319,11 @@ class ExternalApiController extends Controller
             $table_data1=isset($b['calls'])?$b['calls']:array();
             //print_r(count($table_data1));
             $table_data=array_merge($table_data,$table_data1);
-        }
+        }*/
+        $table_data=isset($a['calls'])?$a['calls']:array();
+
+
+        //$table_data=isset($a['calls'])?$a['calls']:array();
         //die();
         //return false;
 
@@ -485,14 +492,16 @@ class ExternalApiController extends Controller
             $conversion_rate=(($total_converted_calls*100)/$total_calls);
             $conversion_rate=round($conversion_rate);
 
-            $average_revenue=($revenue_sum/$total_calls);
-            $average_revenue=round($average_revenue);
+            
 
 
         }
         if($total_converted_calls!=0){            
             $average_payout_price=($payout_sum/$total_converted_calls);
             $average_payout_price=round($average_payout_price);
+
+            $average_revenue=($revenue_sum/$total_converted_calls);
+            $average_revenue=round($average_revenue);
         }
         //print_r(max($city_counts_arr));
         //dd($city_counts_arr);
