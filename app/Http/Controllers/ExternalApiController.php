@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Exports\InvoicesExport;
 use Shuchkin\SimpleXLSXGen;
+//use App\Models\Call;
 //use Maatwebsite\Excel\Facades\Excel;
 
 class ExternalApiController extends Controller
@@ -37,13 +38,22 @@ class ExternalApiController extends Controller
         //?page=1&created_at_from=2024-06-19 00:00:00 UTC&created_at_to=2024-06-19 02:00:00 +0000&buyer_id=10455172
         $url='https://live-calls-network.trackdrive.com/api/v1/calls';
         $params=array(
-            'page'=>'1',
-            'created_at_from'=>'2024-06-19 00:00:00 UTC',
-            'created_at_to'=>'2024-06-19 23:59:59 +0000',
-            'buyer_id'=>'10455172',
-            'per_page'=>'25',
+            //'id_from'=>'420622705',
+            //'page'=>'2',
+            //'created_at_from'=>'2024-06-19 00:00:00 UTC',
+            //'created_at_to'=>'2024-06-19 23:59:59 +0000',
+            //'created_at_from'=>'2024-06-28T21:41:35.977+00:00',
+            //'created_at_from'=>'2024-06-29T01:15:51.994+00:00',
+            //'created_at_from'=>'2024-06-29T01:15:51.994+00:00',
+            //'buyer_id'=>'10455172',
+            //'per_page'=>'25',
+            //'order'=>'created_at',
+            //'order_dir'=>'asc',
+            //'cursor'=>'1.7188355534787E+14'
+            //'cursor'=>'1.7188255574192E+14'
         );
-        $differenceHours=$this->differenceHours($params);
+        //$differenceHours=$this->differenceHours($params);
+        $differenceHours=2;
         //dd($differenceHours);
         
         
@@ -54,7 +64,7 @@ class ExternalApiController extends Controller
                         //'Accept' => 'application/json',
                     ])->get($url,$params);
         $a=$response->json();
-        //dd($a);
+        dd($a);
         $total_pages = $a['metadata']['total_pages'];
         $table_data=array();
         for ($i=1; $i <=$total_pages ; $i++) { 
