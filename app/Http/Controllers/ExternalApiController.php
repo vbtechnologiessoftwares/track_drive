@@ -12,6 +12,11 @@ use Shuchkin\SimpleXLSXGen;
 
 class ExternalApiController extends Controller
 {
+    public function index2(){
+
+        return view('home');
+     }
+     
     private function differenceHours($params){
         $created_at_from_sec=strtotime($params['created_at_from']);
         $created_at_to_sec=strtotime($params['created_at_to']);
