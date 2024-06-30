@@ -7,15 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Exports\InvoicesExport;
 use Shuchkin\SimpleXLSXGen;
-//use App\Models\Call;
+use App\Models\Call;
+use Carbon\Carbon;
 //use Maatwebsite\Excel\Facades\Excel;
 
 class ExternalApiController extends Controller
 {
-    public function index2(){
-
+    public function home(){
         return view('home');
-     }
+    }
      
     private function differenceHours($params){
         $created_at_from_sec=strtotime($params['created_at_from']);
@@ -1266,9 +1266,6 @@ class ExternalApiController extends Controller
     private function allElementsSame($array){
          // Get the first element of the array
         $first = reset($array);
-
-        //dd($first);
-
         // Check if all elements are the same as the first element
         foreach ($array as $value) {
             //dd($value);
@@ -1276,8 +1273,11 @@ class ExternalApiController extends Controller
                 return false;
             }
         }
-
         return true;
     }
+
+    public function downloadExcel(){
+    }
+
 
 }
