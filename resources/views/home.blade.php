@@ -1,6 +1,5 @@
-@include('layout.header')
-@include('layout.menu')
-
+@extends('layout.app')
+@section('content')
 		<!--start page wrapper -->
 		<div class="page-wrapper">
 			<div class="page-content">
@@ -148,4 +147,4 @@
 		</div>
 		<!--end page wrapper -->
 
-		@include('layout.footer')
+	@endsection
